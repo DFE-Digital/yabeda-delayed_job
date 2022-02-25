@@ -10,13 +10,13 @@ RSpec.describe Yabeda::DelayedJob do
     it do
       expect { Job.new({ asdf: 'asdf' }).delay(queue: :q).call }.to change {
                                                                       ::Yabeda.delayed_job.jobs_enqueued_total.values[{
-                                                                        queue: 'q', worker: 'Job#call'
+                                                                        queue: 'q', worker: 'Delayed::PerformableMethod'
                                                                       }]
                                                                     }.by(1)
 
       expect { ::Delayed::Worker.new.work_off }.to change {
                                                      ::Yabeda.delayed_job.job_runtime.values[{ queue: 'q',
-                                                                                               worker: 'Job#call' }]
+                                                                                               worker: 'Delayed::PerformableMethod' }]
                                                    }.from(nil)
     end
   end
@@ -26,7 +26,7 @@ RSpec.describe Yabeda::DelayedJob do
       FailJob.new(some: :data).delay(queue: :fail_queue).call
 
       expect { ::Delayed::Worker.new.work_off(1) }.to change {
-        ::Yabeda.delayed_job.jobs_errored_total.values[{ queue: 'fail_queue', worker: 'FailJob#call',
+        ::Yabeda.delayed_job.jobs_errored_total.values[{ queue: 'fail_queue', worker: 'Delayed::PerformableMethod',
                                                          error: 'StandardError' }]
       }.by(1)
       ::Delayed::Backend::ActiveRecord::Job.destroy_all

@@ -47,12 +47,24 @@ module Yabeda
         @server ||= ObjectSpace.each_object(Delayed::Command).any?
       end
 
-      def labelize(job)
-        result = { queue: job.queue, worker: job.name }
+      def labelize(job)          
+        result = { queue: job.queue, worker: job_class(job) }
         result.merge!(error: job.error.class.name) if job.error
         result
       end
 
+      def job_class(job)
+        payload_object = job.payload_object
+
+        if defined?(ActiveJob::QueueAdapters::DelayedJobAdapter::JobWrapper)
+          if payload_object.is_a?(ActiveJob::QueueAdapters::DelayedJobAdapter::JobWrapper)
+            return payload_object.job_data["job_class"].to_s
+          end
+        end
+
+        payload_object.class.to_s
+      end
+      
       def track_database_metrics
         job_scope.select(:queue).count.each do |queue, count|
           Yabeda.delayed_job.jobs_waiting_count.set({ queue: queue }, count)
