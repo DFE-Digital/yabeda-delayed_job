@@ -22,7 +22,7 @@ module Yabeda
       counter :jobs_errored_total, tags: %i[queue worker error], comment: 'asdf'
 
       histogram :job_runtime, comment: 'A histogram of the job execution time.',
-                              unit: :seconds, per: :job,
+                              unit: :seconds,
                               tags: %i[queue worker],
                               buckets: LONG_RUNNING_JOB_RUNTIME_BUCKETS
       gauge :running_job_runtime, tags: %i[queue worker], aggregation: :max, unit: :seconds,
